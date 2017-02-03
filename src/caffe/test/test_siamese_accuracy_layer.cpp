@@ -72,7 +72,10 @@ TYPED_TEST(SiameseAccuracyLayerTest, TestForwardCPU) {
   
   // initialize class to be tested 
   typedef typename TypeParam::Dtype Dtype;
+  
+  // set up parameters
   LayerParameter layer_param;
+
   SiameseAccuracyLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);

@@ -11,7 +11,7 @@ layer {
     scale: 0.00390625
   }
   data_param {
-    source: "examples/siamese/mnist_siamese_train_leveldb"
+    source: "/home/nguyenhoangson/FYP/data/siamese-alexnet/siamese_train_leveldb"
     batch_size: 64
   }
 }
@@ -27,7 +27,7 @@ layer {
     scale: 0.00390625
   }
   data_param {
-    source: "examples/siamese/mnist_siamese_test_leveldb"
+    source: "/home/nguyenhoangson/FYP/data/siamese-alexnet/siamese_test_leveldb"
     batch_size: 100
   }
 }
@@ -336,6 +336,21 @@ layer {
     }
   }
 }
+
+# testing new layer
+layer{
+   name: "siamese_accuracy"
+   type: "SiameseAccuracy"
+   bottom: "feat"
+   bottom: "feat_p"
+   bottom: "sim"
+   top: "siamese_accuracy"
+   include{
+	phase: TEST
+   }
+}
+
+# this is contrastive loss layer 
 layer {
   name: "loss"
   type: "ContrastiveLoss"
