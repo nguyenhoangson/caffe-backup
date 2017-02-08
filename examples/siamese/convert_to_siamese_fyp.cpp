@@ -207,7 +207,7 @@ void convert_to_siamese_data(const char* iconic_image_filename,
   
   char label_iconic;
   char label_insitu;
-  char* pixels = new char[2 * rows * cols];
+  char* pixels = new char[6 * rows * cols];
   std::string value;
   
   /* set up caffe datum: a google protobuf messsage  
@@ -215,7 +215,7 @@ void convert_to_siamese_data(const char* iconic_image_filename,
      datum = 3D matrix of (width, height, channel, label(optional))
    */
   caffe::Datum datum;
-  datum.set_channels(2);  // one channel for each image in the pair
+  datum.set_channels(3);  // 3 channels for each image in the pair
   datum.set_height(rows); // height of image
   datum.set_width(cols);  // width of image
   LOG(INFO) << "A total of " << num_iconic_items << " items.";
