@@ -28,7 +28,7 @@ class SiameseAccuracyLayerTest : public CPUDeviceTest<TypeParam> {
         blob_bottom_y_(new Blob<Dtype>(100, 1, 1, 1)),
         blob_top_loss_(new Blob<Dtype>()) {
     
-    // fill the values
+    // Set up data to test
     FillerParameter filler_param;
     filler_param.set_min(-1.0);
     filler_param.set_max(1.0);  // distances~=1.0 to test both sides of margin
@@ -80,9 +80,8 @@ TYPED_TEST(SiameseAccuracyLayerTest, TestForwardCPU) {
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   
+  
   // understand the behavior of code
-  std::cout << "Size: " << this->blob_bottom_vec_.size() << std::endl;
-  std::cout << "Height: " << this->blob_bottom_vec_[0]->shape(2);
   EXPECT_EQ(1, 1);
 }
 

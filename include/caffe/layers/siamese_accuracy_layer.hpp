@@ -32,8 +32,8 @@ class SiameseAccuracyLayer : public LossLayer<Dtype> {
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 			   const vector<Blob<Dtype>*>& top);
   
-  // virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-  //     const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+			   const vector<Blob<Dtype>*>& top);
   
   /**  
    * For siamese accuracy layer, we do not need backward pass    
@@ -46,13 +46,21 @@ class SiameseAccuracyLayer : public LossLayer<Dtype> {
       if (propagate_down[i]) { NOT_IMPLEMENTED; }
     }
   }
-
-  // virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-  //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+  			    const vector<bool>& propagate_down, 
+  			    const vector<Blob<Dtype>*>& bottom)
+  {
+    for (int i = 0; i < propagate_down.size(); ++i) {
+      if (propagate_down[i]) { NOT_IMPLEMENTED; }
+    }
+  }
   
 
-  Blob<Dtype> _diff;
+  Blob<Dtype> _diff; 
   Blob<Dtype> _dist_sq;
+  Blob<Dtype> _diff_sq;  // tmp storage for gpu forward pass
+  Blob<Dtype> _summer_vec;  // tmp storage for gpu forward pass
 };
  
 }  // namespace caffe

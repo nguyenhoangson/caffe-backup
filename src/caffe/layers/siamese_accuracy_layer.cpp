@@ -37,6 +37,10 @@ void SiameseAccuracyLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   */
   _diff.Reshape(bottom[0]->shape(0), bottom[0]->channels(), 1, 1);
   _dist_sq.Reshape(bottom[0]->shape(0), 1, 1, 1);
+  // vector of ones used to sum along channels
+  _summer_vec.Reshape(bottom[0]->channels(), 1, 1, 1);
+  for (int i = 0; i < bottom[0]->channels(); ++i)
+    _summer_vec.mutable_cpu_data()[i] = Dtype(1);
 }
 
 
