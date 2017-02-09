@@ -18,12 +18,19 @@ void SiameseAccuracyLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   LossLayer<Dtype>::LayerSetUp(bottom, top);
 
   // make sure that bottom_i and bottom_j have the same dimension
-  CHECK_EQ(bottom[0]->shape(0), bottom[1]->shape(0));
-  CHECK_EQ(bottom[2]->channels(), 1);
-  CHECK_EQ(bottom[2]->height(), 1);
-  CHECK_EQ(bottom[2]->width(), 1);
+  CHECK_EQ(bottom[0]->num(), bottom[1]->num());  
+  CHECK_EQ(bottom[0]->channels(), bottom[1]->channels());
+  CHECK_EQ(bottom[0]->height(), bottom[1]->height());
+  CHECK_EQ(bottom[0]->width(), bottom[1]->width());
 
-  // make sure that the number of labels are the same with the number of pairs
+  // make sure that label is in correct shape
+  CHECK_EQ(bottom[2]->channels(), 1); 
+  CHECK_EQ(bottom[2]->height(), 1); 
+  CHECK_EQ(bottom[2]->width(), 1); 
+    
+  // make sure number of labels matched with number of image embeddings
+  CHECK_EQ(bottom[0]->num(), bottom[2]->num());
+
   
  /* Blob<Dtype>::Reshape(): 
     + Change the dimensions of the blob, allocating new memory if necessary.
@@ -45,21 +52,29 @@ void SiameseAccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
   int correct_examples = 0;
   int count = bottom[0]->count();
   
-  // subtraction
+  // TODO: 
+  std::cout << "Count: " << count << std::endl;
+
+  /* 
+     subtraction: 
+     void caffe_sub<double>(const int n, const Dtype* a, const Dtype* b, Dtype* y)
+   */
   caffe_sub(
       count,
-      bottom[0]->cpu_data(),  // a
-      bottom[1]->cpu_data(),  // b
+      bottom[0]->cpu_data(),  // const *Dtype a_i
+      bottom[1]->cpu_data(),  // const *Dtype b_i
       _diff.mutable_cpu_data());  // a_i-b_i
 
   // reuse margin paramters of contrastive loss 
   Dtype margin = this->layer_param_.contrastive_loss_param().margin();
-  
-   
+     
   // calculate accuracy 
   for(int i = 0; i < num; i++){
     
-    // get square distance for each example
+    /* 
+       get square distance for each example
+       Dtype caffe_cpu_dot(const int n, const Dtype* x, const Dtype* y)
+     */
     _dist_sq.mutable_cpu_data()[i] = caffe_cpu_dot(channels,
     				     _diff.cpu_data() + (i*channels), _diff.cpu_data() + (i*channels));
     
@@ -85,8 +100,6 @@ void SiameseAccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
   }
    
   accuracy = static_cast<Dtype>(correct_examples) / Dtype(num);
-
-  // std::cout << "Testing: Accuracy: " << accuracy << std::endl;
 
   // update result to top vector
   top[0]->mutable_cpu_data()[0] = accuracy;
