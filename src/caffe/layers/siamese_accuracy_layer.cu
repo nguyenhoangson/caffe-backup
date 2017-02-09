@@ -1,16 +1,20 @@
 #include <algorithm>
 #include <vector>
 
+#include <typeinfo>
+#include <iostream> 
 #include "caffe/layers/siamese_accuracy_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
-void SiameseAccuracyLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+void SiameseAccuracyLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, 
+     				              const vector<Blob<Dtype>*>& top) {
   
+
   Dtype accuracy(0.0);
+  
   int correct_examples = 0;
   const int count = bottom[0]->count();
   	
@@ -19,14 +23,14 @@ void SiameseAccuracyLayer<Dtype>::Forward_gpu(
       count,
       bottom[0]->gpu_data(),  // a
       bottom[1]->gpu_data(),  // b
-      _diff.mutable_gpu_data());  // a_i-b_i
-  
+      _diff.mutable_gpu_data());  // a_i-b_i: store data
+        
   caffe_gpu_powx(
       count,
       _diff.mutable_gpu_data(),  // a_i-b_i
       Dtype(2),
       _diff_sq.mutable_gpu_data());  // (a_i-b_i)^2
-  
+
   caffe_gpu_gemv(
       CblasNoTrans,
       bottom[0]->num(),
@@ -55,10 +59,12 @@ void SiameseAccuracyLayer<Dtype>::Forward_gpu(
     }
   }
 
+  
   accuracy = static_cast<Dtype>(correct_examples) / Dtype(bottom[0]->num());
 
   // update result to top vector
   top[0]->mutable_cpu_data()[0] = accuracy;
+
 }
 
 INSTANTIATE_LAYER_GPU_FUNCS(SiameseAccuracyLayer);

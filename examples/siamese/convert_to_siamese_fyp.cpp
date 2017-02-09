@@ -27,14 +27,15 @@ uint32_t swap_endian(uint32_t val) {
 /* Read index_th image data  */
 void read_image(std::ifstream* image_file, 
 		std::ifstream* label_file,
-		uint32_t index, uint32_t rows, uint32_t cols,
+		uint32_t index, uint32_t rows, 
+		uint32_t cols, const uint32_t num_channels,
 		char* pixels, char* label) {
   
   /* seekg(): sets the position of the next character to be extracted 
      from the input stream. E.g: 
    */
-  image_file->seekg(index * rows * cols + 16);
-  image_file->read(pixels, rows * cols);
+  image_file->seekg(index * num_channels * rows * cols + 16);
+  image_file->read(pixels, num_channels * rows * cols);
   label_file->seekg(index + 8);
   label_file->read(label, 1);
 }
@@ -157,6 +158,7 @@ void convert_to_siamese_data(const char* iconic_image_filename,
   uint32_t num_iconic_labels;
   uint32_t num_insitu_items;
   uint32_t num_insitu_labels;
+  const uint32_t num_channels = 3;  
 
   // we make assumption that iconic and insitu images are in the same shape
   uint32_t rows;
@@ -191,7 +193,11 @@ void convert_to_siamese_data(const char* iconic_image_filename,
   insitu_label_file.read(reinterpret_cast<char*>(&num_insitu_labels), 4);
   num_insitu_labels = swap_endian(num_insitu_labels);
   CHECK_EQ(num_insitu_items, num_insitu_labels);
-
+  
+  // TODO: Delete this 
+  std::cout << "Row: " << rows << std::endl;
+  std::cout << "Col: " << cols << std::endl;
+  
   // TODO: delete this
   std::cout << "Magic: " << insitu_magic << std::endl; 
 
@@ -215,7 +221,7 @@ void convert_to_siamese_data(const char* iconic_image_filename,
      datum = 3D matrix of (width, height, channel, label(optional))
    */
   caffe::Datum datum;
-  datum.set_channels(3);  // 3 channels for each image in the pair
+  datum.set_channels(6);  // 3 channels for each RGB image in the pair
   datum.set_height(rows); // height of image
   datum.set_width(cols);  // width of image
   LOG(INFO) << "A total of " << num_iconic_items << " items.";
@@ -226,14 +232,17 @@ void convert_to_siamese_data(const char* iconic_image_filename,
   for (int insitu_id = 0; insitu_id < num_insitu_items; ++insitu_id) {
     
     // read image from insitu 
-    read_image(&insitu_image_file, &insitu_label_file, insitu_id, rows, cols,
-        pixels, &label_insitu);
+    read_image(&insitu_image_file, &insitu_label_file, 
+	       insitu_id, rows, cols, num_channels, 
+	       pixels, &label_insitu);
     
     for(int iconic_id = 0; iconic_id < num_iconic_items; ++iconic_id){
-        read_image(&iconic_image_file, &iconic_label_file, iconic_id, rows, cols,
-             pixels + (rows * cols), &label_iconic);
+
+        read_image(&iconic_image_file, &iconic_label_file, 
+		   iconic_id, rows, cols, num_channels,
+		   pixels + (num_channels * rows * cols), &label_iconic);
     
-        datum.set_data(pixels, 2*rows*cols);
+        datum.set_data(pixels, 6*rows*cols);
     
         // if two images file have the same label => y = 0
         if (label_insitu  == label_iconic) {

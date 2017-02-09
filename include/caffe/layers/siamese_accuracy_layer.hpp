@@ -25,6 +25,7 @@ class SiameseAccuracyLayer : public LossLayer<Dtype> {
   
 
   virtual inline int ExactNumBottomBlobs() const { return 3; }
+  
   virtual inline const char* type() const { return "SiameseAccuracy"; }
 
  protected:
@@ -55,7 +56,6 @@ class SiameseAccuracyLayer : public LossLayer<Dtype> {
       if (propagate_down[i]) { NOT_IMPLEMENTED; }
     }
   }
-  
 
   Blob<Dtype> _diff; 
   Blob<Dtype> _dist_sq;

@@ -2,9 +2,6 @@
 #include <utility>
 #include <vector>
 
-#include <typeinfo>
-
-#include <iostream>
 #include "caffe/layers/siamese_accuracy_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
@@ -36,6 +33,7 @@ void SiameseAccuracyLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     + Change the dimensions of the blob, allocating new memory if necessary.
   */
   _diff.Reshape(bottom[0]->shape(0), bottom[0]->channels(), 1, 1);
+  _diff_sq.Reshape(bottom[0]->shape(0), bottom[0]->channels(), 1, 1);
   _dist_sq.Reshape(bottom[0]->shape(0), 1, 1, 1);
   // vector of ones used to sum along channels
   _summer_vec.Reshape(bottom[0]->channels(), 1, 1, 1);
@@ -56,9 +54,6 @@ void SiameseAccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
   int correct_examples = 0;
   int count = bottom[0]->count();
   
-  // TODO: 
-  std::cout << "Count: " << count << std::endl;
-
   /* 
      subtraction: 
      void caffe_sub<double>(const int n, const Dtype* a, const Dtype* b, Dtype* y)
@@ -89,8 +84,7 @@ void SiameseAccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
       // if _dist_sq <= margin => correct_examples += 1
       if(_dist_sq.cpu_data()[i] <= margin){
       	correct_examples += 1;
-      }
-      
+      }      
     }
 
     // dissimilar pair
@@ -108,6 +102,11 @@ void SiameseAccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
   // update result to top vector
   top[0]->mutable_cpu_data()[0] = accuracy;
 }
+
+
+#ifdef CPU_ONLY
+STUB_GPU(SiameseAccuracyLayer);
+#endif
 
 INSTANTIATE_CLASS(SiameseAccuracyLayer);
 REGISTER_LAYER_CLASS(SiameseAccuracy);
