@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <vector>
 
-#include <typeinfo>
 #include <iostream> 
 #include "caffe/layers/siamese_accuracy_layer.hpp"
 #include "caffe/util/math_functions.hpp"
@@ -48,8 +47,7 @@ void SiameseAccuracyLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom
       // if _dist_sq <= margin => correct_examples += 1
       if(_dist_sq.cpu_data()[i] <= margin){
       	correct_examples += 1;
-      }
-   
+      }   
     } 
     else {  // dissimilar pairs
       // if _dist_sq > margin => correct_examples += 1
